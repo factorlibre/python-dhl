@@ -1,11 +1,12 @@
 from suds.client import Client
 from suds.wsse import Security, UsernameToken
 
-from dhl.resources.address import DHLPerson, DHLCompany, DHLRegistrationNumbers 
+from dhl.resources.address import DHLPerson, DHLCompany, DHLRegistrationNumbers
 from dhl.resources.package import DHLPackage
 from dhl.resources.shipment import DHLShipment
 from dhl.resources.response import DHLShipmentResponse, DHLPodResponse, \
     DHLTrackingResponse, DHLTrackingEvent, DHLRateResponse
+from dhl.resources.international_detail import DHLInternationalDetail
 from suds.plugin import MessagePlugin
 
 
@@ -323,6 +324,14 @@ class DHLService:
         dhl_shipment.ShipmentInfo.RequestEstimatedDeliveryDate = 'N'
         dhl_shipment.ShipmentInfo.EstimatedDeliveryDateType = 'QDDC'
         dhl_shipment.ShipmentInfo.RequestPickupDetails = 'N'
+
+        dhl_shipment.ShipmentInfo.LabelOptions.CustomerLogo.LogoImage = shipment.logo_image
+        dhl_shipment.ShipmentInfo.LabelOptions.CustomerLogo.LogoImageFormat = shipment.logo_image_format
+        dhl_shipment.ShipmentInfo.LabelOptions.RequestWaybillDocument = shipment.request_waybill_document
+        dhl_shipment.ShipmentInfo.LabelOptions.DHLCustomsInvoiceType = shipment.customs_invoice_type
+        dhl_shipment.ShipmentInfo.LabelOptions.RequestBarcodeInfo = 'N'
+        dhl_shipment.ShipmentInfo.LabelOptions.RequestDHLCustomsInvoice = shipment.customs_dhl_invoice
+
         #dhl_shipment.ShipmentInfo.PackagesCount = str(len(shipment.packages))
         dhl_shipment.PaymentInfo = shipment.payment_info_paperless
         list_service = client.factory.create('Services')
@@ -331,9 +340,42 @@ class DHLService:
             special_service_element.ServiceType = service
             list_service.Service.append(special_service_element)
         dhl_shipment.ShipmentInfo.SpecialServices = list_service
+
         dhl_shipment.InternationalDetail.Commodities.Description = shipment.customs_description
         dhl_shipment.InternationalDetail.Commodities.CustomsValue = shipment.customs_value
         dhl_shipment.InternationalDetail.Content = shipment.customs_content
+        dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceNumber = shipment.international_detail.invoice_reference_number
+        dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceDate = shipment.international_detail.invoice_date
+        dhl_shipment.InternationalDetail.ExportDeclaration.ShipmentPurpose = 'COMMERCIAL'
+        dhl_shipment.InternationalDetail.ExportDeclaration.DocumentFunction = 'EXPORT'
+        dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceReferences.\
+            InvoiceReference.InvoiceReferenceType = shipment.international_detail.invoice_reference_type
+        dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceReferences.\
+            InvoiceReference.InvoiceReferenceNumber = shipment.international_detail.invoice_reference_number
+        dhl_shipment.InternationalDetail.ExportDeclaration.OtherCharges.OtherCharge = ()
+        for other_charge_vals in shipment.international_detail.other_charge:
+            other_charge = client.factory.create('OtherCharge')
+            other_charge.Caption = other_charge_vals.charge_caption
+            other_charge.ChargeValue = other_charge_vals.charge_value
+            other_charge.ChargeType = other_charge_vals.charge_type
+            dhl_shipment.InternationalDetail.ExportDeclaration.OtherCharges.OtherCharge += (other_charge,)
+        dhl_shipment.InternationalDetail.ExportDeclaration.ExportLineItems.ExportLineItem = ()
+        line_count = 0
+        for export_line in shipment.international_detail.export_line_items:
+            line_count += 1
+            export_line_item = client.factory.create('ExportLineItemType')
+            export_line_item.ItemNumber = line_count
+            export_line_item.CommodityCode = export_line.commodity_code
+            export_line_item.Quantity = export_line.quantity
+            export_line_item.QuantityUnitOfMeasurement = export_line.quantity_unit
+            export_line_item.ItemDescription = export_line.item_description
+            export_line_item.UnitPrice = export_line.unit_price
+            export_line_item.NetWeight = export_line.net_weight
+            export_line_item.GrossWeight = export_line.gross_weight
+            export_line_item.ExportReasonType = 'PERMANENT'
+            export_line_item.ManufacturingCountryCode = export_line.manufactoring_country_code
+            dhl_shipment.InternationalDetail.ExportDeclaration.ExportLineItems.ExportLineItem += (export_line_item,)
+
         dhl_shipment.ShipmentInfo.DropOffType = shipment.drop_off_type
         dhl_shipment.ShipTimestamp = shipment.get_dhl_formatted_shipment_time()
         dhl_shipment.PickupLocationCloseTime = shipment.get_dhl_formatted_pickup_time()
@@ -370,6 +412,34 @@ class DHLService:
         dhl_shipment.Ship.Recipient.Address.PostalCode = shipment.receiver.postal_code
         dhl_shipment.Ship.Recipient.Address.CountryCode = shipment.receiver.country_code
 
+        # Exporter
+        dhl_shipment.Ship.Exporter.Contact.PersonName = shipment.exporter_personal_name
+        dhl_shipment.Ship.Exporter.Contact.CompanyName = shipment.exporter_company_name
+        dhl_shipment.Ship.Exporter.Contact.PhoneNumber = shipment.exporter_phone_number
+        dhl_shipment.Ship.Exporter.Contact.EmailAddress = shipment.exporter_email
+        dhl_shipment.Ship.Exporter.Address.StreetLines = shipment.exporter_street
+        dhl_shipment.Ship.Exporter.Address.StreetLines2 = shipment.exporter_street2
+        dhl_shipment.Ship.Exporter.Address.City = shipment.exporter_city
+        dhl_shipment.Ship.Exporter.Address.PostalCode = shipment.exporter_postal_code
+        dhl_shipment.Ship.Exporter.Address.CountryCode = shipment.exporter_country_code
+        dhl_shipment.Ship.Exporter.RegistrationNumbers.RegistrationNumber = client.factory.create('docTypeRef_RegistrationNumber')
+        dhl_shipment.Ship.Exporter.RegistrationNumbers.RegistrationNumber.Number = shipment.exporter_number
+        dhl_shipment.Ship.Exporter.RegistrationNumbers.RegistrationNumber.NumberTypeCode = shipment.exporter_type_code
+        dhl_shipment.Ship.Exporter.RegistrationNumbers.RegistrationNumber.NumberIssuerCountryCode = shipment.exporter_number_issuer_country_code
+        # Buyer
+        dhl_shipment.Ship.Buyer.Contact.PersonName = shipment.buyer_personal_name
+        dhl_shipment.Ship.Buyer.Contact.CompanyName = shipment.buyer_company_name
+        dhl_shipment.Ship.Buyer.Contact.PhoneNumber = shipment.buyer_phone_number
+        dhl_shipment.Ship.Buyer.Contact.EmailAddress = shipment.buyer_email
+        dhl_shipment.Ship.Buyer.Address.StreetLines = shipment.buyer_street
+        dhl_shipment.Ship.Buyer.Address.StreetLines2 = shipment.buyer_street2
+        dhl_shipment.Ship.Buyer.Address.City = shipment.buyer_city
+        dhl_shipment.Ship.Buyer.Address.PostalCode = shipment.buyer_postal_code
+        dhl_shipment.Ship.Buyer.Address.CountryCode = shipment.buyer_country_code
+        dhl_shipment.Ship.Buyer.RegistrationNumbers.RegistrationNumber = client.factory.create('docTypeRef_RegistrationNumber')
+        dhl_shipment.Ship.Buyer.RegistrationNumbers.RegistrationNumber.Number = shipment.buyer_number
+        dhl_shipment.Ship.Buyer.RegistrationNumbers.RegistrationNumber.NumberTypeCode = shipment.buyer_type_code
+        dhl_shipment.Ship.Buyer.RegistrationNumbers.RegistrationNumber.NumberIssuerCountryCode = shipment.buyer_number_issuer_country_code
         counter = 1
         dhl_shipment.Packages.RequestedPackages = ()
         for package in shipment.packages:
