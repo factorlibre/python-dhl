@@ -187,26 +187,19 @@ class DHLService:
             token = UsernameToken(self.username, self.password)
             security.tokens.append(token)
             self.tracking_client.set_options(wsse=security)
-
         tracking_request = self.tracking_client.factory.create('pubTrackingRequest')
-        tracking_request.TrackingRequest.Request.ServiceHeader.MessageTime = '2015-02-09T18:00:00Z'
+        tracking_request.TrackingRequest.Request.ServiceHeader.MessageTime = '2021-10-25T18:00:00Z'
         tracking_request.TrackingRequest.Request.ServiceHeader.MessageReference = '123456789012345678901234567890'
         tracking_request.TrackingRequest.AWBNumber.ArrayOfAWBNumberItem = shipment_awb
         tracking_request.TrackingRequest.LevelOfDetails = 'ALL_CHECK_POINTS'
         tracking_request.TrackingRequest.PiecesEnabled = 'B'
-
         code, res = self.tracking_client.service.trackShipmentRequest(tracking_request)
         if code == 500:
             return DHLTrackingResponse(False, errors=[res.detail.detailmessage])
-
         try:
-            res.TrackingResponse.AWBInfo.ArrayOfAWBInfoItem[0].ShipmentInfo
+            return res.TrackingResponse.AWBInfo.ArrayOfAWBInfoItem[0].Pieces.PieceInfo.ArrayOfPieceInfoItem[0].PieceEvent[0]
         except:
-            message = res.TrackingResponse.AWBInfo.ArrayOfAWBInfoItem[0].Status.ActionStatus
-            return DHLTrackingResponse(
-                success=False,
-                errors=[message]
-            )
+            pass
 
         try:
             shipment_events = res.TrackingResponse.AWBInfo.ArrayOfAWBInfoItem[0].ShipmentInfo.ShipmentEvent.ArrayOfShipmentEventItem
@@ -249,10 +242,7 @@ class DHLService:
                 pieces_events=dhl_pieces_events
             )
         except:
-            return DHLTrackingResponse(
-                success=False,
-                errors=['No pieces found.']
-            )
+            pass
 
 
     ########################################################################
