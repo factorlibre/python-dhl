@@ -1,5 +1,6 @@
 from suds.client import Client
 from suds.wsse import Security, UsernameToken
+from datetime import datetime
 
 from dhl.resources.address import DHLPerson, DHLCompany, DHLRegistrationNumbers 
 from dhl.resources.package import DHLPackage
@@ -188,7 +189,7 @@ class DHLService:
             security.tokens.append(token)
             self.tracking_client.set_options(wsse=security)
         tracking_request = self.tracking_client.factory.create('pubTrackingRequest')
-        tracking_request.TrackingRequest.Request.ServiceHeader.MessageTime = '2021-10-25T18:00:00Z'
+        tracking_request.TrackingRequest.Request.ServiceHeader.MessageTime = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
         tracking_request.TrackingRequest.Request.ServiceHeader.MessageReference = '123456789012345678901234567890'
         tracking_request.TrackingRequest.AWBNumber.ArrayOfAWBNumberItem = shipment_awb
         tracking_request.TrackingRequest.LevelOfDetails = 'ALL_CHECK_POINTS'
