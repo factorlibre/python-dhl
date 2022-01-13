@@ -14,21 +14,26 @@ class DHLRateResponse(DHLResponse):
         for service in services:
             service_dict = {
                 'type': service._type,
-                'total_net': {
-                    'currency': service.TotalNet.Currency,
-                    'amount': service.TotalNet.Amount
-                },
+                'total_net': [],
                 'charges': [],
                 'delivery_time': service.DeliveryTime,
                 'cutoff_time': service.CutoffTime,
                 'next_business_day_ind': service.NextBusinessDayInd
             }
-            for charge in service.Charges.Charge:
-                service_dict['charges'].append({
-                    'currency': service.Charges.Currency,
-                    'charge_type': charge.ChargeType,
-                    'charge_amount': charge.ChargeAmount
-                })
+            if 'TotalNet' in service:
+                for total_net in service.TotalNet:
+                    service_dict['total_net'].append({
+                        'currency': total_net.Currency,
+                        'amount': total_net.Amount
+                    })
+            if 'Charges' in service:
+                for charges in service.Charges:
+                    for charge in charges.Charge:
+                        service_dict['charges'].append({
+                            'currency': charges.Currency,
+                            'charge_type': charge.ChargeType,
+                            'charge_amount': charge.ChargeAmount
+                        })
             list_services.append(service_dict)
         self.services = list_services
 

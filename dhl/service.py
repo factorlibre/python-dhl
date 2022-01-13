@@ -60,19 +60,18 @@ class DHLService:
         dhl_shipment = self._create_dhl_shipment_type2(self.shipment_client,
                                                        shipment)
         result_code, reply = self.shipment_client.service.getRateRequest(
-            None, dhl_shipment)
+            None, None, dhl_shipment)
         if result_code == 500:
             return DHLPodResponse(False, errors=[reply.detail.detailmessage])
         elif result_code == 401:
             return DHLPodResponse(False, errors=[('401', 'Unauthorized')])
-        for rate_reply in reply:
-            notif = rate_reply.Notification
+        for notif in reply.Notification:
             if notif._code != '0':
                 print('[Code: ' + notif._code + ', '
                       'Message: ' + notif.Message + ']')
                 return DHLPodResponse(False, errors=[(notif._code,
                                                       notif.Message)])
-            return DHLRateResponse(True, rate_reply.Service)
+        return DHLRateResponse(True, reply.Service)
 
     def send(self, shipment, message=None, auto=True):
         """
@@ -460,7 +459,7 @@ class DHLService:
         dhl_shipment = client.factory.create(
             'ns2:docTypeRef_RequestedShipmentType2')
         dhl_shipment.Content = 'NON_DOCUMENTS'
-        dhl_shipment.NextBusinessDay = 'N'
+        dhl_shipment.NextBusinessDay = 'Y'
         dhl_shipment.UnitOfMeasurement = shipment.unit
         dhl_shipment.DropOffType.value = shipment.drop_off_type
         dhl_shipment.Account = self.account_number
@@ -503,9 +502,19 @@ class DHLService:
             dhl_package.Dimensions.Length = str(package.length)
             dhl_package.Dimensions.Width = str(package.width)
             dhl_package.Dimensions.Height = str(package.height)
-            dhl_package.PackageContentDescription = str(package.description)
 
             dhl_shipment.Packages.RequestedPackages += (dhl_package,)
             counter += 1
+
+        # Delete empty elements
+        to_delete = []
+        for key in dhl_shipment.__keylist__:
+            try:
+                if not dhl_shipment[key].value:
+                    to_delete.append(key)
+            except:
+                if not dhl_shipment[key]:
+                    to_delete.append(key)        
+        [delattr(dhl_shipment, key) for key in to_delete]
 
         return dhl_shipment
