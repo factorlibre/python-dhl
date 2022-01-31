@@ -75,7 +75,7 @@ class DHLShipment:
         if auto:
             self.service_type = self.get_service_type()
         self.customs_description, self.customs_value = self.get_customs_description_and_value()
-        self.drop_off_type = self.get_drop_off_type()
+        #self.drop_off_type = self.get_drop_off_type()
         self.pickup_time = self.get_pickup_time()
 
     def get_pickup_time(self):
