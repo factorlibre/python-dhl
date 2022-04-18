@@ -57,8 +57,6 @@ class DHLService:
         for rate_reply in reply:
             notif = rate_reply.Notification
             if notif._code != '0':
-                print('[Code: ' + notif._code + ', '
-                      'Message: ' + notif.Message + ']')
                 return DHLPodResponse(False, errors=[(notif._code,
                                                       notif.Message)])
             return DHLRateResponse(True, rate_reply.Service)
@@ -105,39 +103,26 @@ class DHLService:
                     label_bytes=label_bytes,
                     dispatch_number=dispatch_number
                 )
-
-                print('Successfully created DHL shipment!')
-                print('  Tracking numbers: ' + str(tracking_numbers))
-                print('  Identification number: ' + identification_number)
                 if dispatch_number:
                     response.dispatch_number = dispatch_number
-                    print('  Dispatch number: ' + dispatch_number)
                 return response
 
             else:
-                print('  No PDF label!')
                 response = DHLShipmentResponse(
                     success=False,
                     errors=['No PDF label.']
                 )
         except AttributeError:
-            print('Unsuccessful DHL shipment request.')
             response = DHLShipmentResponse(
                 success=False
             )
             try:
-                if reply.Notification:
-                    print('  Notifications:')
-
                 errors = []
                 for notif in reply.Notification:
                     errors.append([notif._code, notif.Message])
-                    print('  [Code: ' + notif._code + ', Message: ' + notif.Message + ']')
                 response.errors = errors
             except AttributeError:
-                print('  No notifications.')
                 response.errors = ['No notifications.']
-        print()
 
         return response
 
