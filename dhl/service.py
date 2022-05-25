@@ -343,6 +343,7 @@ class DHLService:
                 InvoiceReference.InvoiceReferenceType = shipment.international_detail.invoice_reference_type
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceReferences.\
                 InvoiceReference.InvoiceReferenceNumber = shipment.international_detail.invoice_reference_number
+            dhl_shipment.InternationalDetail.ExportDeclaration.Remarks.Remark.RemarkDescription = shipment.international_detail.remarks
             if shipment.international_detail.other_charge:
                 dhl_shipment.InternationalDetail.ExportDeclaration.OtherCharges.OtherCharge = ()
                 for other_charge_vals in shipment.international_detail.other_charge:
@@ -373,7 +374,8 @@ class DHLService:
         dhl_shipment.PickupLocationCloseTime = shipment.get_dhl_formatted_pickup_time()
         dhl_shipment.SpecialPickupInstruction = shipment.special_pickup_instructions
         dhl_shipment.ShipmentInfo.PaperlessTradeEnabled = shipment.paperles_sistem
-        dhl_shipment.ShipmentInfo.PaperlessTradeImage = shipment.invoice_paperles
+        if shipment.invoice_paperles:
+            dhl_shipment.ShipmentInfo.PaperlessTradeImage = shipment.invoice_paperles
         dhl_shipment.Ship.Shipper.Contact.PersonName = shipment.sender.person_name
         dhl_shipment.Ship.Shipper.Contact.CompanyName = shipment.sender.company_name
         dhl_shipment.Ship.Shipper.Contact.PhoneNumber = shipment.sender.phone

@@ -35,9 +35,10 @@ class DHLInternationalDetail:
 
     def __init__(
             self, invoice_date, invoice_reference_number, export_line_items,
-            invoice_reference_type='OID', other_charge=None):
+            invoice_reference_type='OID', other_charge=None, remarks=None):
         self.invoice_date = invoice_date
         self.invoice_reference_number = invoice_reference_number
         self.invoice_reference_type = invoice_reference_type
         self.other_charge = other_charge
         self.export_line_items = export_line_items
+        self.remarks = remarks
