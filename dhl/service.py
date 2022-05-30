@@ -338,7 +338,7 @@ class DHLService:
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceNumber = shipment.international_detail.invoice_reference_number
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceDate = shipment.international_detail.invoice_date
             dhl_shipment.InternationalDetail.ExportDeclaration.ShipmentPurpose = 'COMMERCIAL'
-            dhl_shipment.InternationalDetail.ExportDeclaration.DocumentFunction = 'EXPORT'
+            #dhl_shipment.InternationalDetail.ExportDeclaration.DocumentFunction = 'EXPORT'
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceReferences.\
                 InvoiceReference.InvoiceReferenceType = shipment.international_detail.invoice_reference_type
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceReferences.\
