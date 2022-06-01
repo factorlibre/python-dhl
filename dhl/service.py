@@ -343,6 +343,7 @@ class DHLService:
                 InvoiceReference.InvoiceReferenceType = shipment.international_detail.invoice_reference_type
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceReferences.\
                 InvoiceReference.InvoiceReferenceNumber = shipment.international_detail.invoice_reference_number
+            dhl_shipment.InternationalDetail.ExportDeclaration.Remarks.Remark.RemarkDescription = shipment.international_detail.remarks
             if shipment.international_detail.other_charge:
                 dhl_shipment.InternationalDetail.ExportDeclaration.OtherCharges.OtherCharge = ()
                 for other_charge_vals in shipment.international_detail.other_charge:
@@ -373,7 +374,8 @@ class DHLService:
         dhl_shipment.PickupLocationCloseTime = shipment.get_dhl_formatted_pickup_time()
         dhl_shipment.SpecialPickupInstruction = shipment.special_pickup_instructions
         dhl_shipment.ShipmentInfo.PaperlessTradeEnabled = shipment.paperles_sistem
-        dhl_shipment.ShipmentInfo.PaperlessTradeImage = shipment.invoice_paperles
+        if shipment.invoice_paperles:
+            dhl_shipment.ShipmentInfo.PaperlessTradeImage = shipment.invoice_paperles
         dhl_shipment.Ship.Shipper.Contact.PersonName = shipment.sender.person_name
         dhl_shipment.Ship.Shipper.Contact.CompanyName = shipment.sender.company_name
         dhl_shipment.Ship.Shipper.Contact.PhoneNumber = shipment.sender.phone
@@ -419,19 +421,20 @@ class DHLService:
         dhl_shipment.Ship.Exporter.RegistrationNumbers.RegistrationNumber.NumberTypeCode = shipment.exporter_type_code
         dhl_shipment.Ship.Exporter.RegistrationNumbers.RegistrationNumber.NumberIssuerCountryCode = shipment.exporter_number_issuer_country_code
         # Buyer
-        dhl_shipment.Ship.Buyer.Contact.PersonName = shipment.buyer_personal_name
-        dhl_shipment.Ship.Buyer.Contact.CompanyName = shipment.buyer_company_name
-        dhl_shipment.Ship.Buyer.Contact.PhoneNumber = shipment.buyer_phone_number
-        dhl_shipment.Ship.Buyer.Contact.EmailAddress = shipment.buyer_email
-        dhl_shipment.Ship.Buyer.Address.StreetLines = shipment.buyer_street
-        dhl_shipment.Ship.Buyer.Address.StreetLines2 = shipment.buyer_street2
-        dhl_shipment.Ship.Buyer.Address.City = shipment.buyer_city
-        dhl_shipment.Ship.Buyer.Address.PostalCode = shipment.buyer_postal_code
-        dhl_shipment.Ship.Buyer.Address.CountryCode = shipment.buyer_country_code
-        dhl_shipment.Ship.Buyer.RegistrationNumbers.RegistrationNumber = client.factory.create('docTypeRef_RegistrationNumber')
-        dhl_shipment.Ship.Buyer.RegistrationNumbers.RegistrationNumber.Number = shipment.buyer_number
-        dhl_shipment.Ship.Buyer.RegistrationNumbers.RegistrationNumber.NumberTypeCode = shipment.buyer_type_code
-        dhl_shipment.Ship.Buyer.RegistrationNumbers.RegistrationNumber.NumberIssuerCountryCode = shipment.buyer_number_issuer_country_code
+        dhl_shipment.Ship.Buyer.Contact.PersonName = shipment.buyer_personal_name or ''
+        dhl_shipment.Ship.Buyer.Contact.CompanyName = shipment.buyer_company_name or ''
+        dhl_shipment.Ship.Buyer.Contact.PhoneNumber = shipment.buyer_phone_number or ''
+        dhl_shipment.Ship.Buyer.Contact.EmailAddress = shipment.buyer_email or ''
+        dhl_shipment.Ship.Buyer.Address.StreetLines = shipment.buyer_street or ''
+        dhl_shipment.Ship.Buyer.Address.StreetLines2 = shipment.buyer_street2 or ''
+        dhl_shipment.Ship.Buyer.Address.City = shipment.buyer_city or ''
+        dhl_shipment.Ship.Buyer.Address.PostalCode = shipment.buyer_postal_code or ''
+        dhl_shipment.Ship.Buyer.Address.CountryCode = shipment.buyer_country_code or ''
+        if dhl_shipment.Ship.Buyer.Contact.PersonName:
+            dhl_shipment.Ship.Buyer.RegistrationNumbers.RegistrationNumber = client.factory.create('docTypeRef_RegistrationNumber')
+            dhl_shipment.Ship.Buyer.RegistrationNumbers.RegistrationNumber.Number = shipment.buyer_number
+            dhl_shipment.Ship.Buyer.RegistrationNumbers.RegistrationNumber.NumberTypeCode = shipment.buyer_type_code
+            dhl_shipment.Ship.Buyer.RegistrationNumbers.RegistrationNumber.NumberIssuerCountryCode = shipment.buyer_number_issuer_country_code
         counter = 1
         dhl_shipment.Packages.RequestedPackages = ()
         for package in shipment.packages:
