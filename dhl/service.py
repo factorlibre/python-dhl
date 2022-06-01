@@ -338,6 +338,7 @@ class DHLService:
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceNumber = shipment.international_detail.invoice_reference_number
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceDate = shipment.international_detail.invoice_date
             dhl_shipment.InternationalDetail.ExportDeclaration.ShipmentPurpose = 'COMMERCIAL'
+            dhl_shipment.InternationalDetail.ExportDeclaration.DocumentFunction = 'EXPORT'
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceReferences.\
                 InvoiceReference.InvoiceReferenceType = shipment.international_detail.invoice_reference_type
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceReferences.\
@@ -448,7 +449,6 @@ class DHLService:
             dhl_package.PackageContentDescription = str(package.description)
             dhl_shipment.Packages.RequestedPackages += (dhl_package,)
             counter += 1
-        delattr(dhl_shipment.InternationalDetail.ExportDeclaration, 'DocumentFunction')
         return dhl_shipment
 
     def _create_dhl_shipment_type2(self, client, shipment):
