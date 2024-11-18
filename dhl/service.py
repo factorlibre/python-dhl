@@ -324,7 +324,7 @@ class DHLService:
 
         #dhl_shipment.ShipmentInfo.PackagesCount = str(len(shipment.packages))
         dhl_shipment.PaymentInfo = shipment.payment_info_paperless
-        if shipment.payment_info_paperless == 'DDP':
+        if shipment.payment_info_paperless == 'DDP' and not shipment.is_return:
             shipment.service.append(shipment.service_type2_paperless)
         list_service = client.factory.create('Services')
         for service in shipment.service:
