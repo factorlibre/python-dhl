@@ -59,6 +59,7 @@ class DHLService:
 
         dhl_shipment = self._create_dhl_shipment_type2(self.shipment_client,
                                                        shipment)
+        
         result_code, reply = self.shipment_client.service.getRateRequest(
             None, None, dhl_shipment)
         if result_code == 500:
@@ -458,7 +459,7 @@ class DHLService:
         """
         dhl_shipment = client.factory.create(
             'ns2:docTypeRef_RequestedShipmentType2')
-        dhl_shipment.Content = 'NON_DOCUMENTS'
+        dhl_shipment.Content = shipment.customs_content
         dhl_shipment.NextBusinessDay = 'Y'
         dhl_shipment.UnitOfMeasurement = shipment.unit
         dhl_shipment.DropOffType.value = shipment.drop_off_type
