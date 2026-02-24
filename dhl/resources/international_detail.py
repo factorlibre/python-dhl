@@ -5,7 +5,8 @@ class DHLExportLineItems:
 
     def __init__(
             self, hs_code, quantity, item_description, unit_price, net_weight,
-            gross_weight, manufactoring_country_code, quantity_unit='PCS'):
+            gross_weight, manufactoring_country_code, quantity_unit='PCS',
+            import_commodity_code=None):
         self.commodity_code = hs_code
         self.quantity = quantity
         self.item_description = item_description
@@ -14,7 +15,8 @@ class DHLExportLineItems:
         self.gross_weight = gross_weight
         self.manufactoring_country_code = manufactoring_country_code
         self.quantity_unit = quantity_unit
-
+        if import_commodity_code is not None:
+            self.import_commodity_code = import_commodity_code
 
 class DHLOtherCharge:
     """

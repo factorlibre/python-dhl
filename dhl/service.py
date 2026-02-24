@@ -337,8 +337,11 @@ class DHLService:
         if shipment.international_detail:
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceNumber = shipment.international_detail.invoice_reference_number
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceDate = shipment.international_detail.invoice_date
+            dhl_shipment.InternationalDetail.ExportDeclaration.ExportReasonType = 'PERMANENT'
+            dhl_shipment.InternationalDetail.ExportDeclaration.PlaceOfIncoterm = "San Fernando De Henares"
             dhl_shipment.InternationalDetail.ExportDeclaration.ShipmentPurpose = 'COMMERCIAL'
-            dhl_shipment.InternationalDetail.ExportDeclaration.DocumentFunction = 'EXPORT'
+            dhl_shipment.InternationalDetail.ExportDeclaration.DocumentFunction = 'BOTH'
+
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceReferences.\
                 InvoiceReference.InvoiceReferenceType = shipment.international_detail.invoice_reference_type
             dhl_shipment.InternationalDetail.ExportDeclaration.InvoiceReferences.\
@@ -358,13 +361,14 @@ class DHLService:
                 export_line_item = client.factory.create('ExportLineItemType')
                 export_line_item.ItemNumber = line_count
                 export_line_item.CommodityCode = export_line.commodity_code
+                export_line_item.ImportCommodityCode = export_line.import_commodity_code
                 export_line_item.Quantity = export_line.quantity
                 export_line_item.QuantityUnitOfMeasurement = export_line.quantity_unit
                 export_line_item.ItemDescription = export_line.item_description
                 export_line_item.UnitPrice = export_line.unit_price
                 export_line_item.NetWeight = export_line.net_weight
                 export_line_item.GrossWeight = export_line.gross_weight
-                export_line_item.ExportReasonType = 'PERMANENT'
+                #export_line_item.ExportReasonType = 'PERMANENT'
                 export_line_item.ManufacturingCountryCode = export_line.manufactoring_country_code
                 dhl_shipment.InternationalDetail.ExportDeclaration.ExportLineItems.ExportLineItem += (export_line_item,)
 
